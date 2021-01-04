@@ -3,13 +3,9 @@ import os
 import time
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.common.keys import Keys
-from bs4 import BeautifulSoup
-import re
-import pandas as pd
 
 options = Options()
-#options.headless = True
-driver = webdriver.Firefox(options=options, executable_path='geckodriver')
+driver = webdriver.Firefox(options=options, executable_path='/home/tarek/Desktop/selenium/geckodriver')
 
 Search_Strings = ["red", "green", "blue", "purple"]
 i = 0
