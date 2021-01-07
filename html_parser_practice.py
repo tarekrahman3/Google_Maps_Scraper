@@ -1,7 +1,6 @@
 import os
 import csv
 import time
-import pandas as pd
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
@@ -18,25 +17,21 @@ options = Options()
 #options.headless = True
 driver = webdriver.Chrome(options=options, executable_path='chromedriver')
 
-"""
-with open('file.csv', newline='') as f:
-    reader = csv.reader(f)
-    data = [tuple(row) for row in reader]
-"""
 Strings = [
- 'site:LinkedIn.com/company/ The right hand task force',
- 'site:LinkedIn.com/company/ Food hub '
+ 'The Right-Hand Task Force',
+ 'BRAC',
+ 'Grameenphone'
 ]
 for string in Strings:
     time.sleep(3)
     driver.get('http://www.google.com')
     time.sleep(4)
     que = driver.find_element_by_xpath("//input[@name='q']")
-    que.send_keys(string)
+    que.send_keys("site:LinkedIn.com/company/ ", string)
     time.sleep(4)
     que.send_keys(Keys.RETURN)
     time.sleep(4)
-    col__1 = driver.find_element(By.ID, "rso").find_element_by_xpath('.//h3/span').text
+    col__1 = driver.find_element(By.ID, "rso").find_element_by_xpath('.//span[1]').text
     col_1 = ['Title:', col__1]
     text.append(col_1)
     col__2 = driver.find_element(By.ID, "rso").find_element_by_xpath('.//a').get_attribute('href')
