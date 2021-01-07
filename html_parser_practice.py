@@ -30,7 +30,7 @@ for string in Strings:
     que.send_keys("site:LinkedIn.com/company/ ", string)
     time.sleep(4)
     que.send_keys(Keys.RETURN)
-    time.sleep(4)
+    time.sleep(8)
     col__1 = driver.find_element(By.ID, "rso").find_element_by_xpath('.//span[1]').text
     col_1 = ['Title:', col__1]
     text.append(col_1)
