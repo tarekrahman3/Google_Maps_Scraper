@@ -27,7 +27,7 @@ for string in Strings:
     driver.get('http://www.google.com')
     time.sleep(4)
     que = driver.find_element_by_xpath("//input[@name='q']")
-    que.send_keys("site:LinkedIn.com/company/ ", string)
+    que.send_keys("site:linkedin.com/company/ ", string)
     time.sleep(4)
     que.send_keys(Keys.RETURN)
     time.sleep(8)
@@ -39,6 +39,7 @@ for string in Strings:
     url.append(col_2)
     row = [col_1, col_2]
     rows.append(row)
+    time.sleep(4)
 
 for data in rows:
     print(data)
