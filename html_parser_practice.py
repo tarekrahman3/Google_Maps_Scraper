@@ -1,4 +1,5 @@
 import os
+import csv
 import time
 import pandas as pd
 from selenium import webdriver
@@ -13,14 +14,20 @@ url = []
 rows = []
 
 options = Options()
-# options.headless = True
+
+#options.headless = True
 driver = webdriver.Chrome(options=options, executable_path='chromedriver')
 
-Search_Strings = [
- 'LinkedIn',
- 'Crunchbase'
+"""
+with open('file.csv', newline='') as f:
+    reader = csv.reader(f)
+    data = [tuple(row) for row in reader]
+"""
+Strings = [
+ 'site:LinkedIn.com/company/ The right hand task force',
+ 'site:LinkedIn.com/company/ Food hub '
 ]
-for string in Search_Strings:
+for string in Strings:
     time.sleep(3)
     driver.get('http://www.google.com')
     time.sleep(4)
@@ -29,13 +36,13 @@ for string in Search_Strings:
     time.sleep(4)
     que.send_keys(Keys.RETURN)
     time.sleep(4)
-    col__1 = driver.find_element_by_id('rso').find_element_by_xpath('.//h3/span').text
-    col_1 = 'Title:', col__1
+    col__1 = driver.find_element(By.ID, "rso").find_element_by_xpath('.//h3/span').text
+    col_1 = ['Title:', col__1]
     text.append(col_1)
-    col__2 = driver.find_element_by_id('rso').find_element_by_xpath('.//a').get_attribute('href')
-    col_2 = 'Website:', col__2
+    col__2 = driver.find_element(By.ID, "rso").find_element_by_xpath('.//a').get_attribute('href')
+    col_2 = ['Website:', col__2]
     url.append(col_2)
-    row = col_1, col_2
+    row = [col_1, col_2]
     rows.append(row)
 
 for data in rows:
