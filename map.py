@@ -2,8 +2,6 @@
 # # Map Search Results LINK goes below
 URL = 'https://www.google.com/maps/search/Restaurants/@23.1791086,89.502563,15z/data=!3m1!4b1'
 
-
-
 from selenium import webdriver
 import time
 from selenium.webdriver.chrome.options import Options
@@ -42,7 +40,6 @@ def headers_loop():
 			WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//div[@class="section-result-content"]')))
 		except:
 			time.sleep(10)
-	
 	results= driver.find_elements_by_xpath("//div[contains(@class, 'scrollable-show section-layout-flex-vertical')]/div[@class='section-result']")
 	#results=driver.find_elements_by_class_name('section-result-content')
 	current_page=driver.find_element_by_xpath('//span[@class="n7lv7yjyC35__left"]').text
@@ -87,7 +84,6 @@ def headers_loop():
 				results[i].click()
 			except:
 				results[i].click()
-		
 		wait_for_title=WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, '//div[contains(@class, "header-title")]')))
 		business_url = driver.current_url
 		try:
@@ -145,7 +141,6 @@ def data_frame():
 	df = pd.DataFrame (data, columns = ['business_url', 'title','rate','ratings','details','location','phones','website','address','address2'])
 	df.to_csv (r'google_map_export_data.csv', index = False, header=True)
 	print(df)
-
 
 driver=webdriver.Chrome(options=options, executable_path='/home/practice_environment/chromedriver')
 driver.get(str(URL))
