@@ -1,14 +1,15 @@
 
 # # Map Search Results LINK goes below
-URL = 'https://www.google.com/maps/search/Restaurants/@23.1791086,89.502563,15z/data=!3m1!4b1'
+URL = 'https://www.google.com/maps/search/IT+Company/@37.7809046,-122.4391864,14z/data=!3m1!4b1!4m8!2m7!3m6!1sIT+Company!2sSan+Francisco,+CA,+USA!3s0x80859a6d00690021:0x4a501367f076adff!4m2!1d-122.4194155!2d37.7749295'
+
 
 from selenium import webdriver
 import time
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.keys import Keys
-import pandas as pd
 import csv
 import os
+import pandas as pd
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -19,18 +20,30 @@ options.add_experimental_option("useAutomationExtension", False)
 options.add_experimental_option("excludeSwitches",["enable-automation"])
 options.add_argument("--start-maximized")
 options.add_argument('--ignore-certificate-errors')
-#options.add_argument('user-data-dir="/home/tarek/Selenium_Projects/Project_LinkedIn/user_dir"')
 
-col1=[]
-col2=[]
-col3=[]
-col4=[]
-col5=[]
-col6=[]
-col7=[]
-col8=[]
-col9=[]
-col10=[]
+col1 = []
+col2 = []
+col3 = []
+col4 = []
+col5 = []
+col6 = []
+col7 = []
+col8 = []
+col9 = []
+
+
+
+
+def change_language():
+	WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH,"//button[@class='searchbox-button']")))
+	menu = driver.find_element_by_xpath("//button[@class='searchbox-button']").click()
+	WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH,'//button[contains(@class, "widget-languages")]')))
+	lng_set = driver.find_element_by_xpath('//button[contains(@class, "widget-languages")]').click()
+	WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH,'//*[@id="languages"]//ul[1]/li[11]/a')))
+	en = driver.find_element_by_xpath('//*[@id="languages"]//ul[1]/li[11]/a').click()
+
+
+
 
 def headers_loop():
 	try:
@@ -40,34 +53,42 @@ def headers_loop():
 			WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//div[@class="section-result-content"]')))
 		except:
 			time.sleep(10)
-	results= driver.find_elements_by_xpath("//div[contains(@class, 'scrollable-show section-layout-flex-vertical')]/div[@class='section-result']")
+	
+	results= driver.find_elements_by_xpath("//div[contains(@class, 'scrollable-show')]/div[@class='section-result']")
 	#results=driver.find_elements_by_class_name('section-result-content')
 	current_page=driver.find_element_by_xpath('//span[@class="n7lv7yjyC35__left"]').text
-	print(f"current_page:{current_page}")
+	#print(f"current_page:{current_page}")
 	i=0
 	for i in range(len(results)): 
-		results= driver.find_elements_by_xpath("//div[contains(@class, 'scrollable-show section-layout-flex-vertical')]/div[@class='section-result']")
+		results = driver.find_elements_by_xpath("//div[contains(@class, 'scrollable-show')]/div[@class='section-result']")
 		#results=driver.find_elements_by_class_name('section-result')
-		title=results[i].find_element_by_xpath(".//h3[contains(@class, 'result-title')]").text
+		
 		try:
-			rate=results[i].find_element_by_xpath(".//span[contains(@class, 'rating-score')]").text
+			rate = results[i].find_element_by_xpath(".//span[contains(@class, 'rating-score')]").text
 		except:
-			rate=''
+			rate = ''
 		try:
-			ratings=results[i].find_element_by_xpath(".//span[contains(@class, 'num-ratings')]").text
+			ratings = results[i].find_element_by_xpath(".//span[contains(@class, 'num-ratings')]").text
 		except:
-			ratings=''
-		details=results[i].find_element_by_xpath(".//span[contains(@class, 'result-details')]").text
-		location=results[i].find_element_by_xpath(".//span[contains(@class, 'result-location')]").text
+			ratings = ''
 		try:
-			phones=results[i].find_element_by_xpath(".//span[contains(@class, 'phone-number')]").text
+			details = results[i].find_element_by_xpath(".//span[contains(@class, 'result-details')]").text
 		except:
-			phones=''
+			details = ''
 		try:
-			website=results[i].find_element_by_xpath(".//div[contains(@class, 'result-action-container')]//a").get_attribute('href')
+			location=results[i].find_element_by_xpath(".//span[contains(@class, 'result-location')]").text
 		except:
-			website=''
-		print(f">>'{title}'")
+			location = ''
+		try:
+			phones = results[i].find_element_by_xpath(".//span[contains(@class, 'phone-number')]").text
+		except:
+			phones = ''
+		try:
+			website = results[i].find_element_by_xpath(".//div[contains(@class, 'result-action-container')]//a").get_attribute('href')
+		except:
+			website = ''
+		
+		
 		try:
 			WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//h3[contains(@class, 'result-title')]")))
 		except:
@@ -84,33 +105,32 @@ def headers_loop():
 				results[i].click()
 			except:
 				results[i].click()
-		wait_for_title=WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, '//div[contains(@class, "header-title")]')))
+		wait_for_title = WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, '//div[contains(@class, "header-title")]')))
 		business_url = driver.current_url
+		title = driver.find_element_by_xpath(".//h1[contains(@class, 'section-hero-header')]").text
 		try:
-			address=driver.find_element_by_xpath('//button[contains(@data-item-id, "address")]').get_attribute('aria-label')
+			address = driver.find_element_by_xpath('//button[contains(@data-item-id, "address")]').get_attribute('aria-label')
 		except:
-			address='N/A'
-		try:
-			address2=driver.find_element_by_xpath('//button[contains(@data-item-id, "data-item-id")]').text
-		except:
-			address2='N/A'
-		print(f"...{address}")
-		print(f"....... completed")
-		col1.append(title)
-		col2.append(rate)
-		col3.append(ratings)
-		col4.append(details)
-		col5.append(location)
-		col6.append(phones)
-		col7.append(website)
-		col8.append(address)
-		col9.append(address2)
-		col10.append(business_url)
+			address = ''
+		print(f" >  {str((len(col1)))}   -    '{title}'")
+		print(f"               {address}")
+		col1.append(business_url)
+		col2.append(title)
+		col3.append(rate)
+		col4.append(ratings)
+		col5.append(details)
+		col6.append(location)
+		col7.append(phones)
+		col8.append(website)
+		col9.append(address)
 		back_to_list=driver.find_element_by_xpath('//button[@class="section-back-to-list-button blue-link noprint"]')
 		WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, '//button[@class="section-back-to-list-button blue-link noprint"]')))
 		back_to_list.click()
 		WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, "//h3[contains(@class, 'result-title')]")))
 		WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, "//h3[contains(@class, 'result-title')]")))
+
+
+
 def next_pagination():
 	try:
 		next_page=WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, '//*[@id="n7lv7yjyC35__section-pagination-button-next"]')))
@@ -126,27 +146,34 @@ def next_pagination():
 		WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CLASS_NAME, "section-result-content")))
 	except:
 		time.sleep(20)
+
+
+
+
 def data_frame():
-	data = {'title': col1,
-		'rate': col2,
-		'ratings': col3,
-		'details': col4,
-		'location': col5,
-		'phones': col6,
-		'website': col7,
-		'address': col8,
-		'address2': col9,
-		'business_url': col10
-		}
-	df = pd.DataFrame (data, columns = ['business_url', 'title','rate','ratings','details','location','phones','website','address','address2'])
+	data = {'business_url': col1,
+	'title': col2,
+	'rate': col3,
+	'ratings': col4,
+	'details': col5,
+	'location': col6,
+	'phones': col7,
+	'website': col8,
+	'address': col9,
+	}
+	df = pd.DataFrame (data, columns = ['business_url', 'title', 'rate', 'ratings', 'details', 'location', 'phones', 'website', 'address'])
 	df.to_csv (r'google_map_export_data.csv', index = False, header=True)
 	print(df)
 
+
 driver=webdriver.Chrome(options=options, executable_path='/home/practice_environment/chromedriver')
-driver.get(str(URL))
+driver.get(str(URL) + '?hl=en')
+
 
 #functions
-a=0
+
+#change_language()
+
 while True:
 	try:
 		headers_loop()
@@ -156,7 +183,7 @@ while True:
 		next_pagination()
 	except:
 		break
-a +=1
+
 data_frame()
 driver.quit()
 	
