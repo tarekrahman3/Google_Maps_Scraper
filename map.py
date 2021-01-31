@@ -1,7 +1,4 @@
-
-# # Map Search Results LINK goes below
-URL = 'https://www.google.com/maps/search/IT+Company/@37.7809046,-122.4391864,14z/data=!3m1!4b1!4m8!2m7!3m6!1sIT+Company!2sSan+Francisco,+CA,+USA!3s0x80859a6d00690021:0x4a501367f076adff!4m2!1d-122.4194155!2d37.7749295'
-
+URL = input("Enter Google Map URL: ")
 
 from selenium import webdriver
 import time
