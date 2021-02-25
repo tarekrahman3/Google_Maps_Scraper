@@ -1,7 +1,9 @@
 URL = input("Enter Google Map URL: ")
-
+Export_File_Name = input("Enter Export File Name: ")
 from selenium import webdriver
 import time
+from time import ctime
+
 import csv
 import os
 import pandas as pd
@@ -56,7 +58,15 @@ def headers_loop():
 	current_page=driver.find_element_by_xpath('//span[@class="n7lv7yjyC35__left"]').text
 	#print(f"current_page:{current_page}")
 	i=0
-	for i in range(len(results)): 
+	for i in range(len(results)):
+		try:
+			WebDriverWait(driver, 15).until(EC.element_to_be_clickable((By.CLASS_NAME, "section-result-content")))
+		except:
+			try:
+				WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//div[@class="section-result-content"]')))
+			except:
+				time.sleep(10)
+		c_time = ctime()
 		results = driver.find_elements_by_xpath("//div[contains(@class, 'scrollable-show')]/div[@class='section-result']")
 		#results=driver.find_elements_by_class_name('section-result')
 		
@@ -102,11 +112,12 @@ def headers_loop():
 				results[i].click()
 			except:
 				results[i].click()
-		wait_for_title = WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, '//div[contains(@class, "header-title")]')))
-		business_url = driver.current_url
+		wait_for_title = WebDriverWait(driver, 200).until(EC.presence_of_element_located((By.XPATH, '//h1[contains(@class, "section-hero-header-title")]')))
+		business_url = f"{c_time} | {str(driver.current_url)}"
 		title = driver.find_element_by_xpath(".//h1[contains(@class, 'section-hero-header')]").text
 		try:
 			address = driver.find_element_by_xpath('//button[contains(@data-item-id, "address")]').get_attribute('aria-label')
+			
 		except:
 			address = ''
 		print(f" >  {str((len(col1)))}   -    '{title}'")
@@ -121,7 +132,6 @@ def headers_loop():
 		col8.append(website)
 		col9.append(address)
 		back_to_list=driver.find_element_by_xpath('//button[@class="section-back-to-list-button blue-link noprint"]')
-		WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, '//button[@class="section-back-to-list-button blue-link noprint"]')))
 		back_to_list.click()
 		WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, "//h3[contains(@class, 'result-title')]")))
 		WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, "//h3[contains(@class, 'result-title')]")))
@@ -135,19 +145,14 @@ def next_pagination():
 	except:
 		time.sleep(10)
 		next_page.click()
-	try:
-		WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, "//*[@id='pane']/div/div[1]/div/div/div[4]/div[1]")))
-	except:
-		pass
-	try:
-		WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CLASS_NAME, "section-result-content")))
-	except:
-		time.sleep(20)
+	time.sleep(4)
 
 
 
 
 def data_frame():
+	csvtime = ctime()
+	file_name=f"{csvtime} - {str(Export_File_Name)}.csv"
 	data = {'business_url': col1,
 	'title': col2,
 	'rate': col3,
@@ -158,8 +163,7 @@ def data_frame():
 	'website': col8,
 	'address': col9,
 	}
-	df = pd.DataFrame (data, columns = ['business_url', 'title', 'rate', 'ratings', 'details', 'location', 'phones', 'website', 'address'])
-	df.to_csv (r'google_map_export_data.csv', index = False, header=True)
+	df = pd.DataFrame(data, columns = ['business_url', 'title', 'rate', 'ratings', 'details', 'location', 'phones', 'website', 'address']).to_csv(file_name, index=None, header=True)
 	print(df)
 
 
@@ -171,13 +175,14 @@ driver.get(str(URL) + '?hl=en')
 
 #change_language()
 
-while True:
+while len(col1)<200:
 	try:
 		headers_loop()
 	except:
 		pass
 	try:
 		next_pagination()
+		time.sleep(2)
 	except:
 		break
 
