@@ -35,19 +35,6 @@ col9 = []
 col10 = []
 col11 = []
 
-
-
-def change_language():
-	WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH,"//button[@class='searchbox-button']")))
-	menu = driver.find_element_by_xpath("//button[@class='searchbox-button']").click()
-	WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH,'//button[contains(@class, "widget-languages")]')))
-	lng_set = driver.find_element_by_xpath('//button[contains(@class, "widget-languages")]').click()
-	WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH,'//*[@id="languages"]//ul[1]/li[11]/a')))
-	en = driver.find_element_by_xpath('//*[@id="languages"]//ul[1]/li[11]/a').click()
-
-
-
-
 def headers_loop():
 	try:
 		WebDriverWait(driver, 15).until(EC.element_to_be_clickable((By.CLASS_NAME, "section-result-content")))
@@ -72,7 +59,6 @@ def headers_loop():
 				time.sleep(10)
 		c_time = ctime()
 		results = driver.find_elements_by_xpath("//div[contains(@class, 'scrollable-show')]/div[@class='section-result']")
-		#results=driver.find_elements_by_class_name('section-result')
 		
 		try:
 			rate = results[i].find_element_by_xpath(".//span[contains(@class, 'rating-score')]").text
@@ -98,8 +84,7 @@ def headers_loop():
 			website = results[i].find_element_by_xpath(".//div[contains(@class, 'result-action-container')]//a").get_attribute('href')
 		except:
 			website = ''
-		
-		
+	
 		try:
 			WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//h3[contains(@class, 'result-title')]")))
 		except:
@@ -120,8 +105,7 @@ def headers_loop():
 		business_url = f"{c_time} | {str(driver.current_url)}"
 		title = driver.find_element_by_xpath(".//h1[contains(@class, 'section-hero-header')]").text
 		try:
-			address = driver.find_element_by_xpath('//button[contains(@data-item-id, "address")]').get_attribute('aria-label')
-			
+			address = driver.find_element_by_xpath('//button[contains(@data-item-id, "address")]').get_attribute('aria-label')	
 		except:
 			address = ''
 		print(f" >  {str((len(col1)+1))}   -    '{title}'")
@@ -174,12 +158,6 @@ def data_frame():
 
 driver=webdriver.Chrome(options=options, executable_path='/home/tarek/MY_PROJECTS/Selenium_Projects/webdrivers/chromedriver')
 driver.get(str(URL) + '?hl=en')
-#disable_route_preview = driver.find_element_by_xpath('//*[@id="route-preview-controls-top-center"]//label/input')
-#disable_route_preview.click()
-#functions
-
-#change_language()
-
 while len(col1)<200:
 	try:
 		headers_loop()
