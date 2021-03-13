@@ -55,15 +55,15 @@ def search_region(region):
 	print(generated_url)
 	col1.append(f"{str(each_city)}")
 	col2.append(f"{str(key)}")
-	col3.append(generated_url)
-	
+	col3.append(generated_url)	
 
 for each_city in regions:
 	search_region(each_city)
 	for each_keyword in keywords:
 		search_by_keyword(each_keyword)
 driver.quit()
-data = {'city': col1,
+data = {
+'city': col1,
 'keyword': col2,
 'generated_url':col3
 }
