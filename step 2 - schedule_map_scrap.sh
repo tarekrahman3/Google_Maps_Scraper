@@ -8,6 +8,6 @@ declare -a arr=(
 
 for i in "${arr[@]}"
 do
-   echo "$i" | python3 map_latest.py
+   echo "$i" | python3 'map_scraper (pushed into bash script).py'.py
    sleep 30
 done
