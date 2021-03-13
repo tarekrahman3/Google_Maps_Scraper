@@ -7,7 +7,6 @@ Export_File_Name = f"{city} - {keyword}"
 from selenium import webdriver
 import time
 from time import ctime
-import csv
 import os
 import pandas as pd
 from selenium.webdriver.chrome.options import Options
@@ -45,9 +44,7 @@ def headers_loop():
 			time.sleep(10)
 	
 	results= driver.find_elements_by_xpath("//div[contains(@class, 'scrollable-show')]/div[@class='section-result']")
-	#results=driver.find_elements_by_class_name('section-result-content')
 	current_page=driver.find_element_by_xpath('//span[@class="n7lv7yjyC35__left"]').text
-	#print(f"current_page:{current_page}")
 	i=0
 	for i in range(len(results)):
 		try:
@@ -135,7 +132,6 @@ def next_pagination():
 		time.sleep(10)
 		next_page.click()
 	time.sleep(4)
-
 
 def data_frame():
 	csvtime = ctime()
