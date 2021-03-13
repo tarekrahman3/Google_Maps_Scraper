@@ -1,9 +1,12 @@
 URL = input("Enter Google Map URL: ")
-Export_File_Name = input("Enter Export File Name: ")
+import re
+keyword = re.search('\/maps\/search\/(.+)\/@', URL).group(1).replace('+',' ')
+city = re.search('\!2s(.+?)\,', URL).group(1).replace('+', ' ')
+Export_File_Name = f"{city} - {keyword}"
+
 from selenium import webdriver
 import time
 from time import ctime
-
 import csv
 import os
 import pandas as pd
@@ -17,7 +20,7 @@ options = Options()
 options.add_argument("--no-sandbox")
 options.add_experimental_option("useAutomationExtension", False)
 options.add_experimental_option("excludeSwitches",["enable-automation"])
-options.add_argument("--start-maximized")
+#options.add_argument("--start-maximized")
 options.add_argument('--ignore-certificate-errors')
 
 col1 = []
@@ -29,7 +32,8 @@ col6 = []
 col7 = []
 col8 = []
 col9 = []
-
+col10 = []
+col11 = []
 
 
 
@@ -120,7 +124,7 @@ def headers_loop():
 			
 		except:
 			address = ''
-		print(f" >  {str((len(col1)))}   -    '{title}'")
+		print(f" >  {str((len(col1)+1))}   -    '{title}'")
 		print(f"               {address}")
 		col1.append(business_url)
 		col2.append(title)
@@ -131,11 +135,12 @@ def headers_loop():
 		col7.append(phones)
 		col8.append(website)
 		col9.append(address)
+		col10.append(city)
+		col11.append(keyword)
 		back_to_list=driver.find_element_by_xpath('//button[@class="section-back-to-list-button blue-link noprint"]')
 		back_to_list.click()
 		WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, "//h3[contains(@class, 'result-title')]")))
 		WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, "//h3[contains(@class, 'result-title')]")))
-
 
 
 def next_pagination():
@@ -148,12 +153,12 @@ def next_pagination():
 	time.sleep(4)
 
 
-
-
 def data_frame():
 	csvtime = ctime()
 	file_name=f"{csvtime} - {str(Export_File_Name)}.csv"
-	data = {'business_url': col1,
+	data = {'keyword': col11,
+	'city': col10,
+	'business_url': col1,
 	'title': col2,
 	'rate': col3,
 	'ratings': col4,
@@ -161,16 +166,16 @@ def data_frame():
 	'location': col6,
 	'phones': col7,
 	'website': col8,
-	'address': col9,
+	'address': col9
 	}
-	df = pd.DataFrame(data, columns = ['business_url', 'title', 'rate', 'ratings', 'details', 'location', 'phones', 'website', 'address']).to_csv(file_name, index=None, header=True)
-	print(df)
+	df = pd.DataFrame(data, columns = ['keyword','city' , 'business_url', 'title', 'rate', 'ratings', 'details', 'location', 'phones', 'website', 'address']).to_csv(file_name, index=None, header=True)
+	print(f"new file created: {file_name}")
 
 
-driver=webdriver.Chrome(options=options, executable_path='/home/practice_environment/chromedriver')
+driver=webdriver.Chrome(options=options, executable_path='/home/tarek/MY_PROJECTS/Selenium_Projects/webdrivers/chromedriver')
 driver.get(str(URL) + '?hl=en')
-
-
+#disable_route_preview = driver.find_element_by_xpath('//*[@id="route-preview-controls-top-center"]//label/input')
+#disable_route_preview.click()
 #functions
 
 #change_language()
