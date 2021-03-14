@@ -6,7 +6,7 @@ First Step :
 url_genarator.py - this script takes multiple city names and search keywords as input and exports a csv file containing the list of genarated links.
 
 Second Step:
-schedule_map_scrap.sh : This bash script takes the links from first step and synchronously runs map_scraper.py for each url and creates a number of csv for each link.
+schedule_map_scrap.sh : This bash script takes the links from first step and synchronously runs map_scraper.py for each url and creates a number of csv files for each link.
 
 Third Step:
 numpy_csv_cleanup.py : This script takes all the csv from second step and uses pandas module to cleanup some columns and joins all the csv into a single file. 
