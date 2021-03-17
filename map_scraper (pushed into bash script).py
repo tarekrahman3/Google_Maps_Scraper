@@ -35,15 +35,13 @@ col11 = []
 
 def headers_loop():
 	try:
-		WebDriverWait(driver, 15).until(EC.element_to_be_clickable((By.CLASS_NAME, "section-result-content")))
+		WebDriverWait(driver, 15).until(EC.element_to_be_clickable((By.XPATH, "//h3")))
 	except:
 		try:
 			WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//div[@class="section-result-content"]')))
 		except:
 			time.sleep(10)
-	
-	results= driver.find_elements_by_xpath("//div[contains(@class, 'scrollable-show')]/div[@class='section-result']")
-	current_page=driver.find_element_by_xpath('//span[@class="n7lv7yjyC35__left"]').text
+	results= driver.find_elements_by_xpath("//h3")
 	i=0
 	for i in range(len(results)):
 		try:
@@ -54,8 +52,7 @@ def headers_loop():
 			except:
 				time.sleep(10)
 		c_time = ctime()
-		results = driver.find_elements_by_xpath("//div[contains(@class, 'scrollable-show')]/div[@class='section-result']")
-		
+		results = driver.find_elements_by_xpath("//h3")
 		try:
 			rate = results[i].find_element_by_xpath(".//span[contains(@class, 'rating-score')]").text
 		except:
@@ -80,9 +77,8 @@ def headers_loop():
 			website = results[i].find_element_by_xpath(".//div[contains(@class, 'result-action-container')]//a").get_attribute('href')
 		except:
 			website = ''
-	
 		try:
-			WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//h3[contains(@class, 'result-title')]")))
+			WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//h3")))
 		except:
 			time.sleep(5)
 		try:
@@ -101,7 +97,7 @@ def headers_loop():
 		business_url = f"{c_time} | {str(driver.current_url)}"
 		title = driver.find_element_by_xpath(".//h1[contains(@class, 'section-hero-header')]").text
 		try:
-			address = driver.find_element_by_xpath('//button[contains(@data-item-id, "address")]').get_attribute('aria-label')	
+			address = driver.find_element_by_xpath('//button[contains(@data-item-id, "address")]').get_attribute('aria-label')
 		except:
 			address = ''
 		print(f" >  {str((len(col1)+1))}   -    '{title}'")
@@ -121,7 +117,6 @@ def headers_loop():
 		back_to_list.click()
 		WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, "//h3[contains(@class, 'result-title')]")))
 		WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, "//h3[contains(@class, 'result-title')]")))
-
 
 def next_pagination():
 	try:
@@ -150,7 +145,6 @@ def data_frame():
 	df = pd.DataFrame(data, columns = ['keyword','city' , 'business_url', 'title', 'rate', 'ratings', 'details', 'location', 'phones', 'website', 'address']).to_csv(file_name, index=None, header=True)
 	print(f"new file created: {file_name}")
 
-
 driver=webdriver.Chrome(options=options, executable_path='/home/tarek/MY_PROJECTS/Selenium_Projects/webdrivers/chromedriver')
 driver.get(str(URL) + '?hl=en')
 while len(col1)<200:
@@ -163,8 +157,6 @@ while len(col1)<200:
 		time.sleep(2)
 	except:
 		break
-
 data_frame()
 driver.quit()
-	
 print('############  Sequence Completed  ############')
