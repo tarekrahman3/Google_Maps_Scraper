@@ -1,4 +1,5 @@
 URL = input("Enter Google Map URL: ")
+URL = URL.replace('?hl=en', '')
 import re
 keyword = re.search('\/maps\/search\/(.+)\/@', URL).group(1).replace('+',' ')
 city = re.search('\!2s(.+?)\,', URL).group(1).replace('+', ' ')
