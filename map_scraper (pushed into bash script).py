@@ -61,10 +61,8 @@ def headers_loop():
 				else:
 					pass
 			except:
-				break
+				pass
 		results = driver.find_elements_by_xpath("//div[contains(@jsaction, 'mouseover:pane')]")
-		#//div[contains(@aria-label, "Results")]/div[contains(@jstcache, "251")]
-	
 		c_time = ctime()
 		try:
 			rate = results[i].find_element_by_xpath(".//span[contains(@class, 'rating-score')]").text
@@ -82,26 +80,6 @@ def headers_loop():
 			location=results[i].find_element_by_xpath(".//span[contains(@class, 'result-location')]").text
 		except:
 			location = ''
-
-		
-		'''
-		try:
-			WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, ".//h3")))
-		except:
-			time.sleep(5)
-		try:
-			WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.CLASS_NAME, "section-result-content")))
-		except:
-			time.sleep(5)
-		try:
-			results[i].click()
-		except:
-			try:
-				time.sleep(10)
-				results[i].click()
-			except:
-				results[i].click()
-		'''
 
 		r = driver.find_elements_by_xpath("//div[contains(@jsaction, 'mouseover:pane')]/a")
 		action = ActionChains(driver)
