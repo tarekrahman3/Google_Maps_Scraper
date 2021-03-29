@@ -104,11 +104,17 @@ def headers_loop():
 		'''
 
 		r = driver.find_elements_by_xpath("//div[contains(@jsaction, 'mouseover:pane')]/a")
-		#.location_once_scrolled_into_view.send_keys(keys.ENTER)
 		action = ActionChains(driver)
 		action.move_to_element(r[i]).click().perform()	
 		
-		wait_for_title = WebDriverWait(driver, 200).until(EC.presence_of_element_located((By.XPATH, '//h1[contains(@class, "section-hero-header-title")]')))
+		try:
+			wait_for_title = WebDriverWait(driver, 100).until(EC.presence_of_element_located((By.XPATH, '//h1[contains(@class, "section-hero-header-title")]')))
+		except:
+			r = driver.find_elements_by_xpath("//div[contains(@jsaction, 'mouseover:pane')]/a")
+			action = ActionChains(driver)
+			action.move_to_element(r[i]).click().perform()	
+			wait_for_title = WebDriverWait(driver, 500).until(EC.presence_of_element_located((By.XPATH, '//h1[contains(@class, "section-hero-header-title")]')))
+		
 		business_url = f"{c_time} | {str(driver.current_url)}"
 		title = driver.find_element_by_xpath(".//h1[contains(@class, 'section-hero-header')]").text
 		try:
