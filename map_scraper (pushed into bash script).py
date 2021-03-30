@@ -47,21 +47,27 @@ def headers_loop():
 			WebDriverWait(driver, 15).until(EC.element_to_be_clickable((By.XPATH, "//div[contains(@jsaction, 'mouseover:pane')]/a")))
 		except:
 			pass
-		while True:
-			try:
-				r = driver.find_elements_by_xpath("//div[contains(@aria-label, 'Results')]/div//a[contains(@href, 'http')]")
-				action = ActionChains(driver)
-				r_len = (len(r))-1
-				action.move_to_element(r[r_len])
-				action.perform()
-				r[r_len].location_once_scrolled_into_view		
-				if (len(r))==20:
-					break
-					print('scroll done')
-				else:
-					pass
-			except:
-				pass
+		
+		current_results_ = driver.find_elements_by_xpath("//div[contains(@aria-label, 'Results')]/div//a[contains(@href, 'http')]")
+		c_number = len(current_results_)
+		we_need = i
+		
+		if i>=c_number:
+			while True:
+				try:
+					r = driver.find_elements_by_xpath("//div[contains(@aria-label, 'Results')]/div//a[contains(@href, 'http')]")
+					action = ActionChains(driver)
+					action.move_to_element(r[(len(r))-1]).perform()
+					r[(len(r))-1].location_once_scrolled_into_view		
+					if (len(r))>i:
+						break
+					else:
+						pass		
+				except:
+					pass		
+		else:
+			pass
+		
 		results = driver.find_elements_by_xpath("//div[contains(@jsaction, 'mouseover:pane')]")
 		c_time = ctime()
 		try:
@@ -81,18 +87,19 @@ def headers_loop():
 		except:
 			location = ''
 
-		r = driver.find_elements_by_xpath("//div[contains(@jsaction, 'mouseover:pane')]/a")
+		rs = driver.find_elements_by_xpath("//div[contains(@jsaction, 'mouseover:pane')]/a")
 		action = ActionChains(driver)
-		action.move_to_element(r[i]).click().perform()	
+		rs[i-1].location_once_scrolled_into_view
+		action.move_to_element(rs[i]).click().perform()	
 		
 		try:
 			wait_for_title = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//h1[contains(@class, "section-hero-header-title")]')))
 		except:
-			r = driver.find_elements_by_xpath("//div[contains(@aria-label, 'Results')]/div//a[contains(@href, 'http')]")
+			rs = driver.find_elements_by_xpath("//div[contains(@aria-label, 'Results')]/div//a[contains(@href, 'http')]")
 			action = ActionChains(driver)
-			action.move_to_element(r[i]).perform()	
-			r[i-1].location_once_scrolled_into_view
-			r[i].click()
+			action.move_to_element(rs[i]).perform()	
+			rs[i-1].location_once_scrolled_into_view
+			rs[i].click()
 			wait_for_title = WebDriverWait(driver, 200).until(EC.presence_of_element_located((By.XPATH, '//h1[contains(@class, "section-hero-header-title")]')))
 		
 		business_url = f"{c_time} | {str(driver.current_url)}"
@@ -163,14 +170,25 @@ def data_frame():
 
 driver=webdriver.Chrome(options=options, executable_path='/home/tarek/MY_PROJECTS/Selenium_Projects/webdrivers/chromedriver')
 driver.get(str(URL) + '?hl=en')
-
+try:
+	while True:
+		WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, '//div[contains(@class, "route-preview-controls")]//input[contains(@class, "checkbox-input")]')))
+		preview = driver.find_element_by_xpath('//div[contains(@class, "route-preview-controls")]//input[contains(@class, "checkbox-input")]')
+		preview.click()
+		if (preview.get_attribute('aria-checked'))=='false':
+			break
+		else:
+			pass
+except:
+	pass
 while True:
 	headers_loop()
-	next_pagination()
 	if len(col1)>199:
 		break
 	else:
 		pass
+	next_pagination()
+	
 data_frame()
 driver.quit()
 print('############  Sequence Completed  ############')
