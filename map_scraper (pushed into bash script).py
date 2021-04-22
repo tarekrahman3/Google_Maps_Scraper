@@ -1,41 +1,31 @@
-URL = input("Enter Google Map URL: ")
-try:
-	URL = URL.replace('?hl=en', '')
-except:
-	pass
-import re
-keyword = re.search('\/maps\/search\/(.+)\/@', URL).group(1).replace('+',' ')
-city = re.search('\!2s(.+?)\,', URL).group(1).replace('+', ' ')
-Export_File_Name = f"{city} - {keyword}"
-
 from selenium import webdriver
-import time
-from time import ctime
-import os
-import pandas as pd
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
+import time
+import csv
+import re
+
+URL = input("Enter Google Map URL: ")
+try:
+	URL = URL.replace('?hl=en', '')
+except:
+	pass
+keyword = re.search('\/maps\/search\/(.+)\/@', URL).group(1).replace('+',' ')
+city = re.search('\!2s(.+?)\,', URL).group(1).replace('+', ' ')
+Export_File_Name = f"{city} - {keyword}"
+
 options = Options()
 options.add_argument("--no-sandbox")
 options.add_experimental_option("useAutomationExtension", False)
 options.add_experimental_option("excludeSwitches",["enable-automation"])
 options.add_argument('--ignore-certificate-errors')
+driver=webdriver.Chrome(options=options, executable_path='/home/tarek/MY_PROJECTS/Selenium_Projects/webdrivers/chromedriver')
 
-col1 = []
-col2 = []
-col3 = []
-col4 = []
-col5 = []
-col6 = []
-col7 = []
-col8 = []
-col9 = []
-col10 = []
-col11 = []
+dict_array = []
 
 def headers_loop():
 	try:
@@ -47,11 +37,9 @@ def headers_loop():
 			WebDriverWait(driver, 15).until(EC.element_to_be_clickable((By.XPATH, "//div[contains(@jsaction, 'mouseover:pane')]/a")))
 		except:
 			pass
-		
 		current_results_ = driver.find_elements_by_xpath("//div[contains(@aria-label, 'Results')]/div//a[contains(@href, 'http')]")
 		c_number = len(current_results_)
 		we_need = i
-		
 		if i>=c_number:
 			while True:
 				try:
@@ -67,9 +55,8 @@ def headers_loop():
 					pass		
 		else:
 			pass
-		
 		results = driver.find_elements_by_xpath("//div[contains(@jsaction, 'mouseover:pane')]")
-		c_time = ctime()
+		c_time = time.ctime()
 		try:
 			rate = results[i].find_element_by_xpath(".//span[contains(@class, 'rating-score')]").text
 		except:
@@ -86,7 +73,6 @@ def headers_loop():
 			location=results[i].find_element_by_xpath(".//span[contains(@class, 'result-location')]").text
 		except:
 			location = ''
-
 		rs = driver.find_elements_by_xpath("//div[contains(@jsaction, 'mouseover:pane')]/a")
 		action = ActionChains(driver)
 		rs[i-1].location_once_scrolled_into_view
@@ -116,19 +102,21 @@ def headers_loop():
 			phones = driver.find_element_by_xpath("//button[contains(@aria-label, 'Phone:')]").get_attribute('aria-label')
 		except:
 			phones = ''
-		print(f" >  {str((len(col1)+1))}   -    '{title}'")
+		print(f" >  {str((len(dict_array)+1))}   -    '{title}'")
 		print(f"               {address}")
-		col1.append(business_url)
-		col2.append(title)
-		col3.append(rate)
-		col4.append(ratings)
-		col5.append(details)
-		col6.append(location)
-		col7.append(phones)
-		col8.append(website)
-		col9.append(address)
-		col10.append(city)
-		col11.append(keyword)
+		dict_array.append({
+		'business_url': business_url,
+		'title': title,
+		'rate': rate,
+		'ratings': ratings,
+		'details': details,
+		'location': location,
+		'phones': phones,
+		'website': website,
+		'address': address,
+		'city': city,
+		'keyword': keyword
+		})
 		try:
 			back_to_list=driver.find_element_by_xpath('//button[contains(@class, "section-back")]')
 		except:
@@ -150,45 +138,39 @@ def next_pagination():
 		next_page.click()
 	time.sleep(4)
 
-def data_frame():
-	csvtime = ctime()
+def write_csv():
+	csvtime = time.ctime()
 	file_name=f"{csvtime} - {str(Export_File_Name)}.csv"
-	data = {'keyword': col11,
-	'city': col10,
-	'business_url': col1,
-	'title': col2,
-	'rate': col3,
-	'ratings': col4,
-	'details': col5,
-	'location': col6,
-	'phones': col7,
-	'website': col8,
-	'address': col9
-	}
-	df = pd.DataFrame(data, columns = ['keyword','city' , 'business_url', 'title', 'rate', 'ratings', 'details', 'location', 'phones', 'website', 'address']).to_csv(file_name, index=None, header=True)
+	fields = list(dict_array[0].keys())
+	with open(file_name, 'w') as csvfile: 
+		writer = csv.DictWriter(csvfile, fieldnames = fields)
+		writer.writeheader()
+		writer.writerows(dict_array)
 	print(f"new file created: {file_name}")
 
-driver=webdriver.Chrome(options=options, executable_path='/home/tarek/MY_PROJECTS/Selenium_Projects/webdrivers/chromedriver')
-driver.get(str(URL) + '?hl=en')
-try:
-	while True:
-		WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, '//div[contains(@class, "route-preview-controls")]//input[contains(@class, "checkbox-input")]')))
-		preview = driver.find_element_by_xpath('//div[contains(@class, "route-preview-controls")]//input[contains(@class, "checkbox-input")]')
-		preview.click()
-		if (preview.get_attribute('aria-checked'))=='false':
-			break
-		else:
+def main():
+	try:
+		driver.get(str(URL) + '?hl=en')
+		try:
+			while True:
+				WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, '//div[contains(@class, "route-preview-controls")]//input[contains(@class, "checkbox-input")]')))
+				preview = driver.find_element_by_xpath('//div[contains(@class, "route-preview-controls")]//input[contains(@class, "checkbox-input")]')
+				preview.click()
+				if (preview.get_attribute('aria-checked'))=='false':
+					break
+				else:
+					pass
+		except:
 			pass
-except:
-	pass
-while True:
-	headers_loop()
-	if len(col1)>199:
-		break
-	else:
-		pass
-	next_pagination()
-	
-data_frame()
-driver.quit()
+		while True:
+			headers_loop()
+			if len(dict_array)>199:
+				break
+			else:
+				pass
+			next_pagination()
+	finally:
+		write_csv()
+		driver.quit()
+main()
 print('############  Sequence Completed  ############')
