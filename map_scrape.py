@@ -166,17 +166,6 @@ def write_csv():
 def main():
 	try:
 		driver.get(str(URL) + '?hl=en')
-		try:
-			while True:
-				WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, '//div[contains(@class, "route-preview-controls")]//input[contains(@class, "checkbox-input")]')))
-				preview = driver.find_element_by_xpath('//div[contains(@class, "route-preview-controls")]//input[contains(@class, "checkbox-input")]')
-				preview.click()
-				if (preview.get_attribute('aria-checked'))=='false':
-					break
-				else:
-					pass
-		except:
-			pass
 		while True:
 			total_item = driver.find_element_by_xpath('//div[@class="gm2-caption"]//span[2]').text
 			if len(dict_array)>199 | len(dict_array)+1==int(total_item):
@@ -195,4 +184,3 @@ def main():
 		write_csv()
 main()
 print('############  Sequence Completed  ############')
-
