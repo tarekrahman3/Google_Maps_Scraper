@@ -10,7 +10,7 @@ import time
 import csv
 import re
 
-URL = input("")
+URL = input("input url:")
 try:
 	URL = URL.replace('?hl=en', '')
 except:
@@ -32,8 +32,8 @@ options.add_argument('--ignore-certificate-errors')
 options.add_argument("user-agent=DN")
 options.add_experimental_option("excludeSwitches", ["enable-automation"])
 options.add_experimental_option('useAutomationExtension', False)
-options.add_argument('user-data-dir="/home/tarek/MY_PROJECTS/Python_Projects/Google_Map_Clean_Code"')
-driver = webdriver.Chrome(options=options, executable_path='/home/tarek/MY_PROJECTS/Selenium_Projects/webdrivers/chromedriver')
+options.add_argument('user-data-dir=Profile')
+driver = webdriver.Chrome(options=options, executable_path='chromedriver')
 stealth(driver,
 languages=["en-US", "en"],
 vendor="Google Inc.",
@@ -43,14 +43,16 @@ renderer="Intel Iris OpenGL Engine",
 fix_hairline=True,
 )
 
-dict_array = []
 
+dict_array = []
 def headers_loop():
 	try:
 		WebDriverWait(driver, 15).until(EC.element_to_be_clickable((By.XPATH, "//div[contains(@jsaction, 'mouseover:pane')]/a")))
 	except:
 		pass
-	for i in range(20):
+	numbers = driver.find_elements_by_xpath('//div[@class="gm2-caption"]/div/span/span')
+	length = (int(numbers[1].text)-int(numbers[0].text))+1
+	for i in range(length):
 		try:
 			WebDriverWait(driver, 15).until(EC.element_to_be_clickable((By.XPATH, "//div[contains(@jsaction, 'mouseover:pane')]/a")))
 		except:
@@ -58,6 +60,7 @@ def headers_loop():
 		current_results_ = driver.find_elements_by_xpath("//div[contains(@aria-label, 'Results')]/div//a[contains(@href, 'http')]")
 		c_number = len(current_results_)
 		we_need = i
+		x = 0
 		if i>=c_number:
 			while True:
 				try:
@@ -71,43 +74,30 @@ def headers_loop():
 						pass
 				except:
 					pass
+					x+=1
 		else:
 			pass
 		results = driver.find_elements_by_xpath("//div[contains(@jsaction, 'mouseover:pane')]")
 		c_time = time.ctime()
-		try:
-			rate = results[i].find_element_by_xpath(".//span[contains(@class, 'rating-score')]").text
-		except:
-			rate = ''
-		try:
-			ratings = results[i].find_element_by_xpath(".//div[contains(@class, 'rating-container')]/span[2]//span[@role='img']").get_attribute('aria-label')
-		except:
-			ratings = ''
-		try:
-			details = results[i].find_element_by_xpath(".//div[contains(@class, 'info-line')]/span/jsl").text
-		except:
-			details = ''
-		try:
-			location=results[i].find_element_by_xpath(".//span[contains(@class, 'result-location')]").text
-		except:
-			location = ''
+
 		rs = driver.find_elements_by_xpath("//div[contains(@jsaction, 'mouseover:pane')]/a")
 		action = ActionChains(driver)
 		rs[i-1].location_once_scrolled_into_view
 		action.move_to_element(rs[i]).click().perform()	
 		
 		try:
-			wait_for_title = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//h1[contains(@class, "section-hero-header-title")]')))
+			wait_for_title = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, ".//h1[contains(@class, 'title')]")))
 		except:
-			rs = driver.find_elements_by_xpath("//div[contains(@aria-label, 'Results')]/div//a[contains(@href, 'http')]")
+			'''rs = driver.find_elements_by_xpath("//div[contains(@aria-label, 'Results')]/div//a[contains(@href, 'http')]")
 			action = ActionChains(driver)
 			action.move_to_element(rs[i]).perform()	
 			rs[i-1].location_once_scrolled_into_view
 			rs[i].click()
 			wait_for_title = WebDriverWait(driver, 200).until(EC.presence_of_element_located((By.XPATH, '//h1[contains(@class, "section-hero-header-title")]')))
-		
-		business_url = f"{c_time} | {str(driver.current_url)}"
-		title = driver.find_element_by_xpath(".//h1[contains(@class, 'section-hero-header')]").text
+			'''
+			print('error')
+		business_url = f"{str(driver.current_url)}"
+		title = driver.find_element_by_xpath(".//h1[contains(@class, 'title')]").text
 		try:
 			address = driver.find_element_by_xpath('//button[contains(@data-item-id, "address")]').get_attribute('aria-label')
 		except:
@@ -120,43 +110,71 @@ def headers_loop():
 			phones = driver.find_element_by_xpath("//button[contains(@aria-label, 'Phone:')]").get_attribute('aria-label')
 		except:
 			phones = ''
+		try:
+			rate = driver.find_element_by_xpath('//ol[@class="section-star-array"]').get_attribute('aria-label')
+		except:
+			rate = ''
+		try:
+			ratings = driver.find_element_by_xpath("//span/button[contains(text(), 'review')]").text
+		except:
+			ratings = ''
+		try:
+			details = driver.find_element_by_xpath('//div[contains(@aria-label,"About")]').text
+		except:
+			details = ''
+
 		print(f" >  {str((len(dict_array)+1))}   -    '{title}'")
 		print(f"               {address}")
-		dict_array.append({
+		dict_array.append({'time':c_time,
 		'business_url': business_url,
 		'title': title,
 		'rate': rate,
 		'ratings': ratings,
 		'details': details,
-		'location': location,
 		'phones': phones,
 		'website': website,
 		'address': address,
-		'city': city,
 		'keyword': keyword
 		})
 		try:
-			back_to_list=driver.find_element_by_xpath('//button[contains(@class, "section-back")]')
+			back_to_list=driver.find_element_by_xpath('//span[text()="Back to results"]/..')
 		except:
-			back_to_list=driver.find_element_by_xpath('//button[@class="searchbox-button"]')
+			pass
 		back_to_list.click()
 		time.sleep(1)
 		try:
 			WebDriverWait(driver, 15).until(EC.element_to_be_clickable((By.XPATH, "//div[contains(@jsaction, 'mouseover:pane')]")))
 		except:
+			print('line 150 error')
 			pass
+	
 
 def next_pagination():
 		time.sleep(2)
 
-		next_page=WebDriverWait(driver, 8).until(EC.element_to_be_clickable((By.XPATH, "//button[@aria-label=' Next page ']")))
-		next_page.click()
-		time.sleep(4)
+		try:
+			next_page=WebDriverWait(driver, 8).until(EC.element_to_be_clickable((By.XPATH, "//button[@aria-label=' Next page ']")))
+			next_page.click()
+			time.sleep(4)
+			return int(1)
+		except :
+			print('paginaion failed')
+			return int(0)
 
 def write_csv():
 	csvtime = time.ctime()
 	file_name=f"{csvtime} - {str(Export_File_Name)}.csv"
-	fields = list(dict_array[0].keys())
+	
+	fields = ('time',
+		'business_url',
+		'title',
+		'rate',
+		'ratings',
+		'details',
+		'phones',
+		'website',
+		'address',
+		'keyword')
 	with open(file_name, 'w') as csvfile: 
 		writer = csv.DictWriter(csvfile, fieldnames = fields)
 		writer.writeheader()
@@ -164,23 +182,23 @@ def write_csv():
 	print(f"new file created: {file_name}")
 
 def main():
-	try:
-		driver.get(str(URL) + '?hl=en')
-		while True:
-			total_item = driver.find_element_by_xpath('//div[@class="gm2-caption"]//span[2]').text
-			if len(dict_array)>199 | len(dict_array)+1==int(total_item):
-				break
-			else:
-				pass
+	driver.get(str(URL) + '?hl=en')
+	while True:
+		WebDriverWait(driver, 8).until(EC.element_to_be_clickable((By.XPATH, '//*[contains(@aria-label,"Showing results")]')))
+		try:
 			headers_loop()
-			total_item = driver.find_element_by_xpath('//div[@class="gm2-caption"]//span[2]').text
-			if len(dict_array)>199 | len(dict_array)==int(total_item):
-				break
-			else:
-				pass
-			next_pagination()
-	finally:
-		driver,quit()
-		write_csv()
-main()
+		except:
+			break
+		paginate = next_pagination()
+		if paginate==0:
+			break
+		elif paginate==1:
+			pass
+
+try:
+	main()
+
+finally:
+	write_csv()
+	driver.quit()
 print('############  Sequence Completed  ############')
