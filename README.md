@@ -11,5 +11,5 @@ schedule_map_scrap.sh : This bash script takes the links from first step and syn
 Third Step:
 numpy_csv_cleanup.py : This script takes all the csv from second step and uses pandas module to cleanup some columns and joins all the csv into a single file. 
 
-
+Video Demo:
 [![Video Demo](https://img.youtube.com/vi/E5TUek362fc/0.jpg)](https://www.youtube.com/watch?v=E5TUek362fc)
