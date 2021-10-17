@@ -8,7 +8,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-
 driver = uc.Chrome()
 col1 = []
 col2 = []
@@ -45,18 +44,17 @@ def search_by_keyword(each_keyword, each_region):
 	col3.append(generated_url)
 
 def gen_url():
-
 	Regions = input('Enter City & State Names (Example: Dallas, Texas; New York, NY) >> ')
 	regions = Regions.split('; ')
 	Keywords = input('Enter Keywords for nearby search (Example: Hospital; Clinic) >> ')
 	keywords = Keywords.split('; ')
-	
 	for each_region in regions:
 		try:
 			search_region(each_region)
 			for each_keyword in keywords:
 				search_by_keyword(each_keyword, each_region)
-		except:
+		except Exception as e:
+			print(e)
 			pass
 	driver.quit()
 	data = {'city': col1,
