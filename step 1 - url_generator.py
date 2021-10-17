@@ -1,4 +1,4 @@
-from selenium import webdriver
+import undetected_chromedriver.v2 as uc
 import time
 from time import ctime
 import pandas as pd
@@ -8,12 +8,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-options = Options()
-options.add_argument("--no-sandbox")
-options.add_experimental_option("useAutomationExtension", False)
-options.add_experimental_option("excludeSwitches",["enable-automation"])
 
-driver=webdriver.Chrome(options=options, executable_path='/home/tarek/MY_PROJECTS/Selenium_Projects/webdrivers/chromedriver')
+driver = uc.Chrome()
 col1 = []
 col2 = []
 col3 = []
@@ -24,8 +20,8 @@ def search_region(each_region):
 	search_box = driver.find_element_by_xpath('//*[@id="searchboxinput"]')
 	search_box.click()
 	search_box.send_keys(str(each_region))
-	WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.XPATH, '//*[@id="suggestions-grid"]/div[1]')))
-	evaluate_first_result = driver.find_element_by_xpath('//*[@id="suggestions-grid"]/div[1]').text
+	WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.XPATH, '//*[@class="suggestions"]/div/div[1]')))
+	evaluate_first_result = driver.find_element_by_xpath('//*[@class="suggestions"]/div/div[1]').text
 	search_box.send_keys(Keys.DOWN)
 	search_box.send_keys(Keys.ENTER)
 	location_url = driver.current_url
@@ -50,19 +46,23 @@ def search_by_keyword(each_keyword, each_region):
 
 def gen_url():
 
-	Regions = input('Enter City & State Names (Example: Dallas, Texas; New York, NY; Phoenix, Arizona) >> ')
+	Regions = input('Enter City & State Names (Example: Dallas, Texas; New York, NY) >> ')
 	regions = Regions.split('; ')
-	Keywords = input('Enter Keywords for nearby search (Example: Hospital; Clinic; Health Center; Medical Center) >> ')
+	Keywords = input('Enter Keywords for nearby search (Example: Hospital; Clinic) >> ')
 	keywords = Keywords.split('; ')
 	
 	for each_region in regions:
-		search_region(each_region)
-		for each_keyword in keywords:
-			search_by_keyword(each_keyword, each_region)
+		try:
+			search_region(each_region)
+			for each_keyword in keywords:
+				search_by_keyword(each_keyword, each_region)
+		except:
+			pass
 	driver.quit()
 	data = {'city': col1,
 	'keyword': col2,
 	'generated_url':col3
 	}
-	file_name = str(ctime()) + ' Generated Maps URL.csv'
+	file_name = 'Generated Maps URL.csv'
 	data_frame = pd.DataFrame(data, columns = ['city', 'keyword', 'generated_url']).to_csv(file_name, index=None, header=True)
+gen_url()
