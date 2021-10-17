@@ -1,4 +1,4 @@
-# Project_Google_Map
+# Google Maps Scraper
 
 Problem : Locate businesses in any given industry at multiple cities using different search operators and finally creating a single dataframe with named indexes.
 
