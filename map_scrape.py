@@ -1,15 +1,14 @@
-from selenium import webdriver
+import undetected_chromedriver.v2 as uc
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
-from selenium_stealth import stealth
 import time
 import csv
 import re
-
+import pandas as pd
 URL = input("input url:")
 try:
 	URL = URL.replace('?hl=en', '')
@@ -22,28 +21,7 @@ try:
 except:
 	Export_File_Name = f"{keyword}"
 
-options = Options()
-options.add_argument("--no-sandbox")
-options.add_argument("--disable-gpu")
-options.add_argument("--disable-dev-shm-usage")
-options.add_argument("--no-sandbox")
-options.add_argument("--start-maximized")
-options.add_argument('--ignore-certificate-errors')
-options.add_argument("user-agent=DN")
-options.add_experimental_option("excludeSwitches", ["enable-automation"])
-options.add_experimental_option('useAutomationExtension', False)
-options.add_argument('user-data-dir=Profile')
-driver = webdriver.Chrome(options=options, executable_path='chromedriver')
-stealth(driver,
-languages=["en-US", "en"],
-vendor="Google Inc.",
-platform="Win32",
-webgl_vendor="Intel Inc.",
-renderer="Intel Iris OpenGL Engine",
-fix_hairline=True,
-)
-
-
+driver = uc.Chrome()
 dict_array = []
 def headers_loop():
 	try:
@@ -137,7 +115,7 @@ def headers_loop():
 		'keyword': keyword
 		})
 		try:
-			back_to_list=driver.find_element_by_xpath('//span[text()="Back to results"]/..')
+			back_to_list=driver.find_element_by_xpath('//img[contains(@src,"arrow_back_black_24dp.png")]/..')
 		except:
 			pass
 		back_to_list.click()
@@ -164,21 +142,7 @@ def next_pagination():
 def write_csv():
 	csvtime = time.ctime()
 	file_name=f"{csvtime} - {str(Export_File_Name)}.csv"
-	
-	fields = ('time',
-		'business_url',
-		'title',
-		'rate',
-		'ratings',
-		'details',
-		'phones',
-		'website',
-		'address',
-		'keyword')
-	with open(file_name, 'w') as csvfile: 
-		writer = csv.DictWriter(csvfile, fieldnames = fields)
-		writer.writeheader()
-		writer.writerows(dict_array)
+	pd.DataFrame(dict_array).to_csv(file_name, index=False)
 	print(f"new file created: {file_name}")
 
 def main():
