@@ -1,163 +1,225 @@
-import undetected_chromedriver.v2 as uc
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.action_chains import ActionChains
+import traceback
 import time
 import csv
 import re
 import pandas as pd
+from datetime import datetime
+
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
+
 URL = input("input url:")
 Export_File_Name = input("Export_File_Name:")
 
-driver = uc.Chrome()
+
+options = webdriver.ChromeOptions()
+options.add_experimental_option("excludeSwitches", ["enable-automation"])
+options.add_experimental_option("useAutomationExtension", False)
+options.add_argument("--disable-blink-features=AutomationControlled")
+
+
+driver = webdriver.Chrome(
+    service=Service(ChromeDriverManager().install()), options=options
+)
+
+driver.execute_script(
+    "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
+)
+driver.maximize_window()
 
 
 dict_array = []
+
+
 def headers_loop():
-	try:
-		WebDriverWait(driver, 15).until(EC.element_to_be_clickable((By.XPATH, "//div[contains(@jsaction, 'mouseover:pane')]/a")))
-	except Exception as e:
-		print(e)
-		pass
-	numbers = driver.find_elements_by_xpath('//div[@class="gm2-caption"]/div/span/span')
-	length = (int(numbers[1].text)-int(numbers[0].text))+1
-	for i in range(length):
-		try:
-			WebDriverWait(driver, 15).until(EC.element_to_be_clickable((By.XPATH, "//div[contains(@jsaction, 'mouseover:pane')]/a")))
-		except Exception as e:
-			print(e)
-			pass
-		current_results_ = driver.find_elements_by_xpath("//div[contains(@aria-label, 'Results')]/div//a[contains(@href, 'http')]")
-		c_number = len(current_results_)
-		we_need = i
-		x = 0
-		if i>=c_number:
-			while True:
-				try:
-					r = driver.find_elements_by_xpath("//div[contains(@aria-label, 'Results')]/div//a[contains(@href, 'http')]")
-					action = ActionChains(driver)
-					action.move_to_element(r[(len(r))-1]).perform()
-					r[(len(r))-1].location_once_scrolled_into_view
-					if (len(r))>i:
-						break
-					else:
-						pass
-				except:
-					pass
-					x+=1
-		else:
-			pass
-		results = driver.find_elements_by_xpath("//div[contains(@jsaction, 'mouseover:pane')]/a/..")
-		c_time = time.ctime()
+    parent_box_xpath = '//div[@tabindex="-1" and  @data-js-log-root and div[@data-js-log-root and @role="region"]]'
 
-		rs = driver.find_elements_by_xpath("//div[contains(@jsaction, 'mouseover:pane')]/a/..")
-		action = ActionChains(driver)
-		rs[i-1].location_once_scrolled_into_view
-		action.move_to_element(rs[i]).click().perform()	
-		
-		try:
-			wait_for_title = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, ".//h1[contains(@class, 'title')]")))
-		except Exception as e:
-			print(e)
-			'''rs = driver.find_elements_by_xpath("//div[contains(@aria-label, 'Results')]/div//a[contains(@href, 'http')]")
-			action = ActionChains(driver)
-			action.move_to_element(rs[i]).perform()	
-			rs[i-1].location_once_scrolled_into_view
-			rs[i].click()
-			wait_for_title = WebDriverWait(driver, 200).until(EC.presence_of_element_located((By.XPATH, '//h1[contains(@class, "section-hero-header-title")]')))
-			'''
-			print('error')
-		business_url = f"{str(driver.current_url)}"
-		title = driver.find_element_by_xpath(".//h1[contains(@class, 'title')]").text
-		try:
-			address = driver.find_element_by_xpath('//button[contains(@data-item-id, "address")]').get_attribute('aria-label')
-		except:
-			address = ''
-		try:
-			website = driver.find_element_by_xpath("//button[contains(@aria-label, 'Website:')]").get_attribute('aria-label')
-		except:
-			website = ''
-		try:
-			phones = driver.find_element_by_xpath("//button[contains(@aria-label, 'Phone:')]").get_attribute('aria-label')
-		except:
-			phones = ''
-		try:
-			rate = driver.find_element_by_xpath('//ol[@class="section-star-array"]').get_attribute('aria-label')
-		except:
-			rate = ''
-		try:
-			ratings = driver.find_element_by_xpath("//span/button[contains(text(), 'review')]").text
-		except:
-			ratings = ''
-		try:
-			details = driver.find_element_by_xpath('//div[contains(@aria-label,"About")]').text
-		except:
-			details = ''
+    results = driver.find_elements(
+        By.XPATH, '//div[@role="main"]/div/div/div[@data-js-log-root and not(@class)]'
+    )
+    i = 0
+    while i < len(results):
+        elements = driver.find_elements(
+            By.XPATH,
+            '//div[@role="main"]/div/div/div[@data-js-log-root and not(@class)]//a',
+        )
+        driver.execute_script("arguments[0].scrollIntoView()", elements[i])
+        time.sleep(0.5)
+        driver.execute_script("arguments[0].click()", elements[i])
 
-		print(f" >  {str((len(dict_array)+1))}   -    '{title}'")
-		print(f"               {address}")
-		dict_array.append({'time':c_time,
-		'business_url': business_url,
-		'title': title,
-		'rate': rate,
-		'ratings': ratings,
-		'details': details,
-		'phones': phones,
-		'website': website,
-		'address': address,
-		#'keyword': keyword
-		})
-		driver.find_element_by_xpath('//img[contains(@src,"arrow_back_black_24dp.png")]/..').click()
-		time.sleep(2)
-		try:
-			WebDriverWait(driver, 15).until(EC.element_to_be_clickable((By.XPATH, "//div[contains(@jsaction, 'mouseover:pane')]")))
-		except Exception as e:
-			print(e)
-			print('line 150 error')
-			pass
-	
+        WebDriverWait(driver, 30).until(
+            EC.presence_of_element_located(
+                (
+                    By.XPATH,
+                    parent_box_xpath,
+                )
+            )
+        )
 
-def next_pagination():
-		time.sleep(2)
-		try:
-			next_page=WebDriverWait(driver, 8).until(EC.element_to_be_clickable((By.XPATH, "//button[@aria-label=' Next page ']")))
-			next_page.click()
-			time.sleep(4)
-			return int(1)
-		except Exception as e:
-			print(e)
-			print('paginaion failed')
-			return int(0)
+        business_url = f"{str(driver.current_url)}"
+
+        title = driver.find_element(By.XPATH, parent_box_xpath + "//h1").text
+        try:
+            address = (
+                driver.find_element(
+                    By.XPATH,
+                    parent_box_xpath + '//button[contains(@aria-label,"Address:")]',
+                )
+                .get_attribute("aria-label")
+                .replace("Address: ", "")
+            )
+        except:
+            address = None
+        try:
+            website = driver.find_element(
+                By.XPATH, parent_box_xpath + '//a[@data-tooltip="Open website"]'
+            ).get_attribute("href")
+        except:
+            website = None
+        try:
+            phones = driver.find_element(
+                By.XPATH, parent_box_xpath + "//button[contains(@aria-label, 'Phone:')]"
+            ).get_attribute("aria-label")
+        except:
+            phones = None
+        try:
+            rate = driver.find_element(
+                By.XPATH,
+                parent_box_xpath
+                + '//div[div[@jsaction="pane.rating.moreReviews"]]//span[@aria-label]',
+            ).get_attribute("aria-label")
+        except:
+            rate = None
+        try:
+            ratings = driver.find_element(
+                By.XPATH,
+                parent_box_xpath + '//button[@jsaction="pane.rating.moreReviews"]',
+            ).get_attribute("aria-label")
+        except:
+            ratings = None
+        try:
+            open_days = driver.find_element(
+                By.XPATH,
+                parent_box_xpath + '//div[img[@aria-label="Hours"]]/following::div[1]',
+            ).get_attribute("aria-label")
+        except:
+            open_days = None
+
+        dict_array.append(
+            {
+                "business_url": business_url,
+                "title": title,
+                "rate": rate,
+                "ratings": ratings,
+                "open_days": open_days,
+                "phones": phones,
+                "website": website,
+                "address": address,
+            }
+        )
+        print(i, dict_array[-1])
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located(
+                (By.XPATH, parent_box_xpath + "/..//span[*[@viewBox]]")
+            )
+        )
+        driver.execute_script(
+            "arguments[0].click()",
+            driver.find_element(By.XPATH, parent_box_xpath + "/..//span[*[@viewBox]]"),
+        )
+        time.sleep(2)
+        i += 1
+
+
+def scroll_to_last_element(driver):
+    driver.execute_script(
+        "arguments[0].scrollIntoView()",
+        driver.find_elements(
+            By.XPATH,
+            '//div[@role="main"]/div/div/div[@data-js-log-root and not(@class)]',
+        )[-1],
+    )
+
+
+def load_all_elements(driver):
+    WebDriverWait(driver, 30).until(
+        EC.presence_of_element_located(
+            (
+                By.XPATH,
+                '//div[@role="main"]/div/div/div[@data-js-log-root and not(@class)]',
+            )
+        )
+    )
+    results = len(
+        driver.find_elements(
+            By.XPATH,
+            '//div[@role="main"]/div/div/div[@data-js-log-root and not(@class)]',
+        )
+    )
+    while True:
+        scroll_to_last_element(driver)
+        time.sleep(1)
+        scroll_to_last_element(driver)
+        current_results = len(
+            driver.find_elements(
+                By.XPATH,
+                '//div[@role="main"]/div/div/div[@data-js-log-root and not(@class)]',
+            )
+        )
+        break_condition = False
+        epoch_time = int(time.time())
+        while True:
+            scroll_to_last_element(driver)
+            current_time = int(time.time())
+            elapsed_time = datetime.fromtimestamp(
+                current_time
+            ) - datetime.fromtimestamp(epoch_time)
+            try:
+                end_result_notice = driver.find_element(
+                    By.XPATH, """//*[text()="You've reached the end of the list."]"""
+                )
+            except:
+                end_result_notice = None
+            if current_results > results:
+                print("new results found. Total Results: ", current_results)
+                results = current_results
+                epoch_time = int(time.time())
+                break
+            elif end_result_notice != None:
+                break_condition = True
+                break
+            elif current_results == results and elapsed_time.seconds > 20:
+                print("no new results. Total Results: ", current_results)
+                break_condition = True
+                break
+        if break_condition == True:
+            break
+
 
 def write_csv():
-	csvtime = time.ctime()
-	file_name=f"{Export_File_Name}.csv"
-	pd.DataFrame(dict_array).to_csv(file_name, index=False)
-	print(f"new file created: {file_name}")
+    csvtime = time.ctime()
+    file_name = f"{Export_File_Name}.csv"
+    pd.DataFrame(dict_array).to_csv(file_name, index=False)
+    print(f"new file created: {file_name}")
+
 
 def main():
-	driver.get(str(URL) + '?hl=en')
-	while True:
-		WebDriverWait(driver, 8).until(EC.element_to_be_clickable((By.XPATH, '//*[contains(@aria-label,"Showing results")]')))
-		try:
-			headers_loop()
-		except Exception as e:
-			print(e)
-			break
-		paginate = next_pagination()
-		if paginate==0:
-			break
-		elif paginate==1:
-			pass
+    driver.get(str(URL).replace("?hl=en", "") + "?hl=en")
+    load_all_elements(driver)
+    headers_loop()
+
 
 try:
-	main()
-except Exception as e:
-	print(e)
+    main()
+except Exception:
+    print(traceback.format_exc())
 finally:
-	write_csv()
-	driver.quit()
-print('############  Sequence Completed  ############')
+    write_csv()
+    driver.quit()
+
+print("############  Sequence Completed  ############")
