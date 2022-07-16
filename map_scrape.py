@@ -103,26 +103,48 @@ def headers_loop():
         except:
             website = None
         try:
-            phones = driver.find_element(
-                By.XPATH, parent_box_xpath + "//button[contains(@aria-label, 'Phone:')]"
-            ).get_attribute("aria-label")
+            phones = (
+                driver.find_element(
+                    By.XPATH,
+                    parent_box_xpath + "//button[contains(@aria-label, 'Phone:')]",
+                )
+                .get_attribute("aria-label")
+                .replace("Phone:", "")
+            )
         except:
             phones = None
         try:
-            rate = driver.find_element(
-                By.XPATH,
-                parent_box_xpath
-                + '//div[div[@jsaction="pane.rating.moreReviews"]]//span[@aria-label]',
-            ).get_attribute("aria-label")
+            rate = (
+                driver.find_element(
+                    By.XPATH,
+                    parent_box_xpath
+                    + '//div[div[@jsaction="pane.rating.moreReviews"]]//span[@aria-label]',
+                )
+                .get_attribute("aria-label")
+                .replace("stars", "")
+                .strip()
+            )
         except:
             rate = None
         try:
-            ratings = driver.find_element(
-                By.XPATH,
-                parent_box_xpath + '//button[@jsaction="pane.rating.moreReviews"]',
-            ).get_attribute("aria-label")
+            ratings = (
+                driver.find_element(
+                    By.XPATH,
+                    parent_box_xpath + '//button[@jsaction="pane.rating.moreReviews"]',
+                )
+                .get_attribute("aria-label")
+                .replace("reviews", "")
+                .strip()
+            )
         except:
             ratings = None
+        try:
+            category = driver.find_element(
+                By.XPATH,
+                parent_box_xpath + '//button[@jsaction="pane.rating.category"]',
+            ).text
+        except:
+            category = None
         try:
             open_days = driver.find_element(
                 By.XPATH,
@@ -137,17 +159,66 @@ def headers_loop():
             ).text
         except:
             features = None
+        try:
+            img_url = driver.find_element(
+                By.XPATH,
+                parent_box_xpath + '//button[starts-with(@aria-label,"Photo ")]/img',
+            ).get_attribute("src")
+        except:
+            img_url = None
+        try:
+            driver.find_element(
+                By.XPATH, parent_box_xpath + '//div[text()="Claim this business"]'
+            )
+            is_claimed = False
+        except:
+            is_claimed = True
+        try:
+            driver.find_element(
+                By.XPATH,
+                parent_box_xpath + '//span[text()="Identifies as Black-owned"]',
+            )
+            is_black_owned = True
+        except:
+            is_black_owned = False
+        try:
+            driver.find_element(
+                By.XPATH,
+                parent_box_xpath + "//span[text()='Closed']",
+            )
+            current_status = "Closed"
+        except:
+            current_status = "Open"
+        try:
+            plus_code = (
+                driver.find_element(
+                    By.XPATH,
+                    parent_box_xpath
+                    + '//button[starts-with(@aria-label,"Plus code: ")]',
+                )
+                .get_attribute("aria-label")
+                .replace("Plus code: ", "")
+            )
+        except:
+            plus_code = None
         dict_array.append(
             {
                 "business_url": business_url,
                 "title": title,
                 "rate": rate,
-                "ratings": ratings,
-                "open_days": open_days,
-                "phones": phones,
-                "website": website,
+                "reviewCount": ratings,
+                "category": category,
                 "address": address,
-                "features": features,
+                "attributes": features,
+                "plus_code": plus_code,
+                "website": website,
+                "phones": phones,
+                "open_days": open_days,
+                "current_status": current_status,
+                "img_url": img_url,
+                "is_claimed": is_claimed,
+                "is_black_owned": is_black_owned,
+                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             }
         )
         print(i, dict_array[-1])
@@ -175,6 +246,16 @@ def scroll_to_last_element(driver):
             By.XPATH,
             '//div[@role="main"]/div/div/div[@data-js-log-root and not(@class)]',
         )[-1],
+    )
+
+
+def scroll_to_first_element(driver):
+    driver.execute_script(
+        "arguments[0].scrollIntoView()",
+        driver.find_elements(
+            By.XPATH,
+            '//div[@role="main"]/div/div/div[@data-js-log-root and not(@class)]',
+        )[0],
     )
 
 
@@ -207,6 +288,9 @@ def load_all_elements(driver):
         epoch_time = int(time.time())
         while True:
             scroll_to_last_element(driver)
+            scroll_to_first_element(driver)
+            time.sleep(4)
+            scroll_to_last_element(driver)
             current_time = int(time.time())
             elapsed_time = datetime.fromtimestamp(
                 current_time
@@ -217,6 +301,7 @@ def load_all_elements(driver):
                 )
             except:
                 end_result_notice = None
+                break
             if current_results > results:
                 print("new results found. Total Results: ", current_results)
                 results = current_results
@@ -225,7 +310,7 @@ def load_all_elements(driver):
             elif end_result_notice != None:
                 break_condition = True
                 break
-            elif current_results == results and elapsed_time.seconds > 20:
+            elif current_results == results and elapsed_time.seconds > 30:
                 print("no new results. Total Results: ", current_results)
                 break_condition = True
                 break
