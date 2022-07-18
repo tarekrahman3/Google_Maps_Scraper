@@ -197,6 +197,8 @@ for i, url in enumerate(urls):
         failed_list.append({"failed_url": url})
     except TimeoutException:
         scrap_info(driver)
+    pd.DataFrame(dict_array).to_csv("backup_of_map_business_scrap_output.csv", index=False)
+    pd.DataFrame(failed_list).to_csv("backup_of_map_business_scrap_failed_list.csv", index=False)
 driver.quit()
 pd.DataFrame(dict_array).to_csv("map_business_scrap_output.csv", index=False)
 pd.DataFrame(failed_list).to_csv("map_business_scrap_failed_list.csv", index=False)
