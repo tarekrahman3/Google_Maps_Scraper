@@ -1,9 +1,6 @@
-# Google Maps Scraper
-Last Updated: Jul 15, 2022
+Google Maps Scraper
+Last Updated: Juyl 22, 2022
 
-1. Run map_scrape.py
-2. give the google maps search link you want to scrap
-3. Provide the Output File Name.
 
 Video Demonstration
 
