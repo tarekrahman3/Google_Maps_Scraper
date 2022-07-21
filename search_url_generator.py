@@ -10,26 +10,25 @@ import time
 from time import ctime
 import pandas as pd
 
-options = webdriver.ChromeOptions()
-options.add_experimental_option("excludeSwitches", ["enable-automation"])
-options.add_experimental_option("useAutomationExtension", False)
-options.add_argument("--disable-blink-features=AutomationControlled")
+
+def start_browser():
+    options = webdriver.ChromeOptions()
+    options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    options.add_experimental_option("useAutomationExtension", False)
+    options.add_argument("--disable-blink-features=AutomationControlled")
+
+    driver = webdriver.Chrome(
+        service=Service(ChromeDriverManager().install()), options=options
+    )
+
+    driver.execute_script(
+        "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
+    )
+    driver.maximize_window()
+    return driver
 
 
-driver = webdriver.Chrome(
-    service=Service(ChromeDriverManager().install()), options=options
-)
-
-driver.execute_script(
-    "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
-)
-driver.maximize_window()
-col1 = []
-col2 = []
-col3 = []
-
-
-def search_region(each_region):
+def search_region(driver, each_region):
     driver.get("https://www.google.com/maps" + "?hl=en")
     WebDriverWait(driver, 60).until(
         EC.element_to_be_clickable((By.XPATH, '//*[@id="searchboxinput"]'))
@@ -37,15 +36,6 @@ def search_region(each_region):
     search_box = driver.find_element(By.XPATH, '//*[@id="searchboxinput"]')
     search_box.click()
     search_box.send_keys(str(each_region))
-    WebDriverWait(driver, 60).until(
-        EC.presence_of_element_located(
-            (By.XPATH, '//*[@class="sbsb_c "]')
-        )
-    )
-    evaluate_first_result = driver.find_element(By.XPATH, 
-        '//*[@class="sbsb_c "]'
-    ).text
-    search_box.send_keys(Keys.DOWN)
     search_box.send_keys(Keys.ENTER)
     location_url = driver.current_url
     WebDriverWait(driver, 60).until(
@@ -53,13 +43,13 @@ def search_region(each_region):
             (By.XPATH, '//button[contains(@aria-label, "Search nearby")]')
         )
     )
-    search_nearby_button = driver.find_element(By.XPATH, 
-        '//button[contains(@aria-label, "Search nearby")]'
+    search_nearby_button = driver.find_element(
+        By.XPATH, '//button[contains(@aria-label, "Search nearby")]'
     )
     search_nearby_button.click()
 
 
-def search_by_keyword(each_keyword, each_region):
+def search_by_keyword(driver, each_keyword, each_region, output_list):
     WebDriverWait(driver, 60).until(
         EC.element_to_be_clickable((By.XPATH, '//*[@id="searchboxinput"]'))
     )
@@ -70,33 +60,44 @@ def search_by_keyword(each_keyword, each_region):
     business_search_box.send_keys(Keys.ENTER)
     time.sleep(5)
     generated_url = driver.current_url
-    print(generated_url)
-    col1.append(f"{str(each_region)}")
-    col2.append(f"{str(each_keyword)}")
-    col3.append(generated_url)
+    output_list.append(
+        {
+            "Region": str(each_region),
+            "Searched Keyword": each_keyword,
+            "Generated URL": generated_url,
+        }
+    )
+    print(len(output_list), output_list[-1])
 
 
-def gen_url():
+def main():
     Regions = input(
         "Enter City & State Names (Example: Dallas, Texas; New York, NY) >> "
     )
     regions = Regions.split("; ")
     Keywords = input("Enter Keywords for nearby search (Example: Hospital; Clinic) >> ")
     keywords = Keywords.split("; ")
+
+    driver = start_browser()
+
+    output_list = []
+
     for each_region in regions:
         try:
-            search_region(each_region)
+            search_region(driver, each_region)
             for each_keyword in keywords:
-                search_by_keyword(each_keyword, each_region)
+                search_by_keyword(driver, each_keyword, each_region, output_list)
         except Exception as e:
             print(e)
             pass
+        pd.DataFrame(output_list).to_csv(
+            "Generated_Maps_URLs (Backup).csv", index=None, header=True
+        )
+
     driver.quit()
-    data = {"city": col1, "keyword": col2, "generated_url": col3}
-    file_name = "Generated Maps URL.csv"
-    data_frame = pd.DataFrame(
-        data, columns=["city", "keyword", "generated_url"]
-    ).to_csv(file_name, index=None, header=True)
+
+    pd.DataFrame(output_list).to_csv("Generated_Maps_URLs.csv", index=None, header=True)
 
 
-gen_url()
+if __name__ == "__main__":
+    main()
