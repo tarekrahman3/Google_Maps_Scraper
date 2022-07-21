@@ -14,54 +14,54 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 
-URL = input("input url:")
-Export_File_Name = input("Export_File_Name:")
+
+def start_browser():
+    options = webdriver.ChromeOptions()
+    options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    options.add_experimental_option("useAutomationExtension", False)
+    options.add_argument("--disable-blink-features=AutomationControlled")
+    driver = webdriver.Chrome(
+        service=Service(ChromeDriverManager().install()), options=options
+    )
+    time.sleep(1)
+    driver.execute_script(
+        "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
+    )
+    driver.maximize_window()
+    return driver
 
 
-options = webdriver.ChromeOptions()
-options.add_experimental_option("excludeSwitches", ["enable-automation"])
-options.add_experimental_option("useAutomationExtension", False)
-options.add_argument("--disable-blink-features=AutomationControlled")
-
-
-driver = webdriver.Chrome(
-    service=Service(ChromeDriverManager().install()), options=options
-)
-
-driver.execute_script(
-    "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
-)
-driver.maximize_window()
-
-
-dict_array = []
-
-
-def headers_loop():
+def headers_loop(driver, url, dict_array):
     parent_box_xpath = '//div[@tabindex="-1" and  @data-js-log-root and div[@data-js-log-root and @role="region"]]'
 
     results = driver.find_elements(
-        By.XPATH, '//div[@role="main"]/div/div/div[@data-js-log-root and not(@class)]'
+        By.XPATH,
+        '//div[@role="main"]/div/div/div[@data-js-log-root and not(@class)]//div[@role="article"]/a',
     )
     i = 0
     while i < len(results):
         elements = driver.find_elements(
             By.XPATH,
-            '//div[@role="main"]/div/div/div[@data-js-log-root and not(@class)]//a',
+            '//div[@role="main"]/div/div/div[@data-js-log-root and not(@class)]//div[@role="article"]/a',
         )
         driver.execute_script("arguments[0].scrollIntoView()", elements[i])
         time.sleep(1)
         elements = driver.find_elements(
             By.XPATH,
-            '//div[@role="main"]/div/div/div[@data-js-log-root and not(@class)]//a',
+            '//div[@role="main"]/div/div/div[@data-js-log-root and not(@class)]//div[@role="article"]/a',
         )
-        driver.execute_script("arguments[0].click()", elements[i])
+        elements[i].location_once_scrolled_into_view
+        try:
+            driver.execute_script("arguments[0].click()", elements[i])
+        except:
+            input("stuck")
         try:
             WebDriverWait(driver, 15).until(
                 EC.element_to_be_clickable(
                     (
                         By.XPATH,
-                        parent_box_xpath + "/..//span[*[@viewBox]]",
+                        parent_box_xpath
+                        + "/..//div[3]/span/button//*[local-name()='svg']/..",
                     )
                 )
             )
@@ -70,21 +70,32 @@ def headers_loop():
                 "arguments[0].click()",
                 driver.find_elements(
                     By.XPATH,
-                    '//div[@role="main"]/div/div/div[@data-js-log-root and not(@class)]//a',
+                    '//div[@role="main"]/div/div/div[@data-js-log-root and not(@class)]//div[@role="article"]/a',
                 )[i],
             )
             WebDriverWait(driver, 15).until(
                 EC.element_to_be_clickable(
                     (
                         By.XPATH,
-                        parent_box_xpath + "/..//span[*[@viewBox]]",
+                        parent_box_xpath
+                        + "/..//div[3]/span/button//*[local-name()='svg']/..",
                     )
                 )
             )
 
         business_url = f"{str(driver.current_url)}"
 
-        title = driver.find_element(By.XPATH, parent_box_xpath + "//h1").text
+        try:
+            title = driver.find_element(By.XPATH, parent_box_xpath + "//h1").text
+        except:
+            title = None
+        try:
+            driver.find_element(
+                By.XPATH, parent_box_xpath + '//span[text()="Temporarily closed"]'
+            )
+            is_temporarily_closed = True
+        except:
+            is_temporarily_closed = False
         try:
             address = (
                 driver.find_element(
@@ -203,8 +214,10 @@ def headers_loop():
             plus_code = None
         dict_array.append(
             {
+                "source_url": url,
                 "business_url": business_url,
                 "title": title,
+                "is_temporarily_closed": is_temporarily_closed,
                 "rate": rate,
                 "reviewCount": ratings,
                 "category": category,
@@ -223,17 +236,28 @@ def headers_loop():
         )
         print(i, dict_array[-1])
         WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located(
-                (By.XPATH, parent_box_xpath + "/..//span[*[@viewBox]]")
+            EC.element_to_be_clickable(
+                (
+                    By.XPATH,
+                    parent_box_xpath
+                    + "/..//div[3]/span/button//*[local-name()='svg']/..",
+                )
             )
         )
         driver.execute_script(
             "arguments[0].click()",
-            driver.find_element(By.XPATH, parent_box_xpath + "/..//span[*[@viewBox]]"),
+            driver.find_element(
+                By.XPATH,
+                parent_box_xpath + "/..//div[3]/span/button//*[local-name()='svg']/..",
+            ),
         )
         WebDriverWait(driver, 10).until(
             EC.invisibility_of_element(
-                (By.XPATH, parent_box_xpath + "/..//span[*[@viewBox]]")
+                (
+                    By.XPATH,
+                    parent_box_xpath
+                    + "/..//div[3]/span/button//*[local-name()='svg']/..",
+                )
             )
         )
         i += 1
@@ -287,56 +311,59 @@ def load_all_elements(driver):
         break_condition = False
         epoch_time = int(time.time())
         while True:
+            current_time = int(time.time())
             scroll_to_last_element(driver)
             scroll_to_first_element(driver)
-            time.sleep(4)
+            time.sleep(5)
             scroll_to_last_element(driver)
-            current_time = int(time.time())
             elapsed_time = datetime.fromtimestamp(
                 current_time
             ) - datetime.fromtimestamp(epoch_time)
             try:
-                end_result_notice = driver.find_element(
+                driver.find_element(
                     By.XPATH, """//*[text()="You've reached the end of the list."]"""
                 )
+                break_condition = True
             except:
-                end_result_notice = None
+                break_condition = False
+            if break_condition == True:
                 break
             if current_results > results:
-                print("new results found. Total Results: ", current_results)
                 results = current_results
                 epoch_time = int(time.time())
                 break
-            elif end_result_notice != None:
+            elif current_results == results and elapsed_time.seconds > 15:
                 break_condition = True
                 break
-            elif current_results == results and elapsed_time.seconds > 30:
-                print("no new results. Total Results: ", current_results)
-                break_condition = True
-                break
+            break_condition = False
         if break_condition == True:
             break
-
-
-def write_csv():
-    csvtime = time.ctime()
-    file_name = f"{Export_File_Name}.csv"
-    pd.DataFrame(dict_array).to_csv(file_name, index=False)
-    print(f"new file created: {file_name}")
+    current_results = len(
+        driver.find_elements(
+            By.XPATH,
+            '//div[@role="main"]/div/div/div[@data-js-log-root and not(@class)]',
+        )
+    )
+    print("Total Results: ", current_results)
 
 
 def main():
-    driver.get(str(URL).replace("?hl=en", "") + "?hl=en")
-    load_all_elements(driver)
-    headers_loop()
-
-
-try:
-    main()
-except Exception:
-    print(traceback.format_exc())
-finally:
-    write_csv()
+    urls = pd.read_csv("map_scrape_input.csv").links.tolist()
+    driver = start_browser()
+    dict_array = []
+    for url in urls:
+        driver.get(str(url).replace("?hl=en", "") + "?hl=en")
+        driver.execute_script("document.body.style.zoom='60%'")
+        load_all_elements(driver)
+        headers_loop(driver, url, dict_array)
+        pd.DataFrame(dict_array).to_csv("map_scrape_output (Backup).csv", index=False)
+    pd.DataFrame(dict_array).to_csv("map_scrape_output.csv", index=False)
     driver.quit()
 
-print("############  Sequence Completed  ############")
+
+if __name__ == "__main__":
+    try:
+        main()
+    except Exception:
+        print(traceback.format_exc())
+    print("############  Sequence Completed  ############")
