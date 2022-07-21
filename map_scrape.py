@@ -300,44 +300,75 @@ def load_all_elements(driver):
     )
     while True:
         scroll_to_last_element(driver)
-        time.sleep(1)
-        scroll_to_last_element(driver)
-        current_results = len(
+        time.sleep(3)
+        if results < len(
             driver.find_elements(
                 By.XPATH,
                 '//div[@role="main"]/div/div/div[@data-js-log-root and not(@class)]',
             )
-        )
-        break_condition = False
-        epoch_time = int(time.time())
-        while True:
-            current_time = int(time.time())
-            scroll_to_last_element(driver)
-            scroll_to_first_element(driver)
-            time.sleep(5)
-            scroll_to_last_element(driver)
-            elapsed_time = datetime.fromtimestamp(
-                current_time
-            ) - datetime.fromtimestamp(epoch_time)
+        ):
+            results = len(
+                driver.find_elements(
+                    By.XPATH,
+                    '//div[@role="main"]/div/div/div[@data-js-log-root and not(@class)]',
+                )
+            )
+            break_condition = False
+        else:
             try:
                 driver.find_element(
-                    By.XPATH, """//*[text()="You've reached the end of the list."]"""
+                    By.XPATH,
+                    """//*[text()="You've reached the end of the list."]""",
                 )
                 break_condition = True
             except:
-                break_condition = False
+                scroll_to_first_element(driver)
+                time.sleep(2)
+                scroll_to_last_element(driver)
+                time.sleep(2)
+                current_results = len(
+                    driver.find_elements(
+                        By.XPATH,
+                        '//div[@role="main"]/div/div/div[@data-js-log-root and not(@class)]',
+                    )
+                )
+                if current_results > results:
+                    results = current_results
+                    break_condition = False
+                else:
+                    break_condition = False
+                    epoch_time = int(time.time())
+                    while True:
+                        current_time = int(time.time())
+                        scroll_to_last_element(driver)
+                        time.sleep(2.5)
+                        scroll_to_first_element(driver)
+                        time.sleep(4)
+                        scroll_to_last_element(driver)
+                        time.sleep(3)
+                        elapsed_time = datetime.fromtimestamp(
+                            current_time
+                        ) - datetime.fromtimestamp(epoch_time)
+                        try:
+                            driver.find_element(
+                                By.XPATH,
+                                """//*[text()="You've reached the end of the list."]""",
+                            )
+                            break_condition = True
+                        except:
+                            break_condition = False
+                        if break_condition == True:
+                            break
+                        if current_results > results:
+                            results = current_results
+                            epoch_time = int(time.time())
+                            break
+                        elif current_results == results and elapsed_time.seconds > 15:
+                            break_condition = True
+                            break
+                        break_condition = False
             if break_condition == True:
                 break
-            if current_results > results:
-                results = current_results
-                epoch_time = int(time.time())
-                break
-            elif current_results == results and elapsed_time.seconds > 15:
-                break_condition = True
-                break
-            break_condition = False
-        if break_condition == True:
-            break
     current_results = len(
         driver.find_elements(
             By.XPATH,
@@ -353,7 +384,7 @@ def main():
     dict_array = []
     for url in urls:
         driver.get(str(url).replace("?hl=en", "") + "?hl=en")
-        driver.execute_script("document.body.style.zoom='60%'")
+
         load_all_elements(driver)
         headers_loop(driver, url, dict_array)
         pd.DataFrame(dict_array).to_csv("map_scrape_output (Backup).csv", index=False)
