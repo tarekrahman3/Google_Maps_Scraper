@@ -34,16 +34,16 @@ def search_region(each_region):
     WebDriverWait(driver, 60).until(
         EC.element_to_be_clickable((By.XPATH, '//*[@id="searchboxinput"]'))
     )
-    search_box = driver.find_element_by_xpath('//*[@id="searchboxinput"]')
+    search_box = driver.find_element(By.XPATH, '//*[@id="searchboxinput"]')
     search_box.click()
     search_box.send_keys(str(each_region))
     WebDriverWait(driver, 60).until(
         EC.presence_of_element_located(
-            (By.XPATH, '//*[@class="suggestions"]/div/div[1]')
+            (By.XPATH, '//*[@class="sbsb_c "]')
         )
     )
-    evaluate_first_result = driver.find_element_by_xpath(
-        '//*[@class="suggestions"]/div/div[1]'
+    evaluate_first_result = driver.find_element(By.XPATH, 
+        '//*[@class="sbsb_c "]'
     ).text
     search_box.send_keys(Keys.DOWN)
     search_box.send_keys(Keys.ENTER)
@@ -53,7 +53,7 @@ def search_region(each_region):
             (By.XPATH, '//button[contains(@aria-label, "Search nearby")]')
         )
     )
-    search_nearby_button = driver.find_element_by_xpath(
+    search_nearby_button = driver.find_element(By.XPATH, 
         '//button[contains(@aria-label, "Search nearby")]'
     )
     search_nearby_button.click()
@@ -63,7 +63,7 @@ def search_by_keyword(each_keyword, each_region):
     WebDriverWait(driver, 60).until(
         EC.element_to_be_clickable((By.XPATH, '//*[@id="searchboxinput"]'))
     )
-    business_search_box = driver.find_element_by_xpath('//*[@id="searchboxinput"]')
+    business_search_box = driver.find_element(By.XPATH, '//*[@id="searchboxinput"]')
     business_search_box.click()
     business_search_box.clear()
     business_search_box.send_keys(each_keyword)
