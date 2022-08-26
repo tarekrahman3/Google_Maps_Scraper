@@ -1,5 +1,5 @@
 Google Maps Scraper
-Last Updated: Juyl 22, 2022
+Last Updated: July 22, 2022
 
 
 Video Demonstration
